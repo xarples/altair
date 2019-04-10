@@ -1,0 +1,41 @@
+{
+  "name": "@xarples/altair",
+  "version": "0.0.1",
+  "description": "Simple authorization and authentication server",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "cross-env NODE_ENV=production node ./dist/server.js",
+    "start-dev": "cross-env NODE_ENV=development tsnd ./src/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xarples/altaier.git"
+  },
+  "keywords": [
+    "authorization",
+    "authentication",
+    "server"
+  ],
+  "author": "xarples",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xarples/altaier/issues"
+  },
+  "homepage": "https://github.com/xarples/altaier#readme",
+  "dependencies": {
+    "cross-env": "^5.2.0",
+    "dotenv": "^7.0.0",
+    "express": "^4.16.4",
+    "mongoose": "^5.5.0",
+    "oauth2orize": "^1.11.0"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^4.16.1",
+    "@types/mongoose": "^5.3.25",
+    "@types/oauth2orize": "^1.8.5",
+    "ts-node-dev": "^1.0.0-pre.32",
+    "typescript": "^3.4.3"
+  }
+}
