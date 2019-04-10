@@ -1,5 +1,12 @@
 import mongoose from 'mongoose'
 
+interface IAccessToken extends mongoose.Document {
+  token: string,
+  clientId: string,
+  userId: string,
+  scope: string
+}
+
 const AccessToken = new mongoose.Schema({
   token: String,
   clientId: String,
@@ -7,4 +14,4 @@ const AccessToken = new mongoose.Schema({
   scope: String
 })
 
-export default mongoose.model('AccessToken', AccessToken)
+export default mongoose.model<IAccessToken>('AccessToken', AccessToken)

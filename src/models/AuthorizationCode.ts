@@ -1,6 +1,14 @@
 import mongoose from 'mongoose'
 
-const AuthorizationCode = new mongoose.Schema({
+interface IAuthorizationCode extends mongoose.Document {
+  code: string,
+  clientId: string,
+  redirectUri: string,
+  userId: string,
+  scope: string
+}
+
+const AuthorizationCode = new mongoose.Schema<IAuthorizationCode>({
   code: String,
   clientId: String,
   redirectUri: String,
@@ -8,4 +16,4 @@ const AuthorizationCode = new mongoose.Schema({
   scope: String
 })
 
-export default mongoose.model('AuthorizationCode', AuthorizationCode)
+export default mongoose.model<IAuthorizationCode>('AuthorizationCode', AuthorizationCode)
