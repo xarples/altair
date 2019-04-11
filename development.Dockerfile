@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["bash", "./wait-for-it.sh", "db:5432", "--", "bash", "./entry.dev.sh" ]
+CMD ["sh", "./wait-for-it.sh", "db:27017", "--", "bash", "./entry.dev.sh" ]
