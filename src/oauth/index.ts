@@ -1,4 +1,5 @@
 import oauth2orize from 'oauth2orize'
+import ms from 'ms'
 import * as models from '../models'
 import * as utils from '../utils'
 
@@ -20,7 +21,7 @@ oauthServer.grant(oauth2orize.grant.code(async (client, redirectUri, user, res, 
       clientId: client.clientId,
       redirectUri,
       userId: user.id,
-      scope: res.scope
+      scope: client.scope
     })
 
     await authCode.save()
@@ -32,16 +33,13 @@ oauthServer.grant(oauth2orize.grant.code(async (client, redirectUri, user, res, 
   }
 }))
 
-
-oauthServer.exchange('authorization_code', oauth2orize.exchange.code(async (client, code, redirectUri, done) => {
+oauthServer.exchange(oauth2orize.exchange.code(async (client, code, redirectUri, done) => {
   try {
     const authCode = await models.AuthorizationCode.findOne({ code }).exec()
 
     if (!authCode) {
       throw new Error('auth code was not found')
     }
-
-    console.log(authCode.clientId)
 
     if (client.clientId !== authCode.clientId) {
       return done(null)
@@ -51,18 +49,27 @@ oauthServer.exchange('authorization_code', oauth2orize.exchange.code(async (clie
       return done(null)
     }
 
-    const token = utils.getRandomString(256)
-
-    const accessToken = new models.AccessToken({
-      token,
+    let accessToken = new models.AccessToken({
+      token: utils.getRandomString(256),
       clientId: authCode.clientId,
       userId: authCode.userId,
-      scope: authCode.scope
+      scope: authCode.scope,
+      expiresIn: ms('24h')
     })
 
-    await accessToken.save()
+    let refreshToken = new models.RefreshToken({
+      token: utils.getRandomString(256),
+      clientId: authCode.clientId,
+      userId: authCode.userId,
+      scope: authCode.scope,
+    })
 
-    return done(null, token)
+    accessToken = await accessToken.save()
+    refreshToken = await refreshToken.save()
+
+    return done(null, accessToken.token, refreshToken.token, { 
+      expires_in: accessToken.expiresIn,
+    })
   } catch (e) {
     return done(e)
   }
@@ -72,8 +79,6 @@ oauthServer.exchange('authorization_code', oauth2orize.exchange.code(async (clie
 export const authorizeMiddleware = oauthServer.authorize(async (clientId, redirectUri, done) => {
   try {
     const client = await models.Client.findOne({ clientId }).exec()
-
-    console.log(client)
 
     if (!client) { 
       return done(null, false)

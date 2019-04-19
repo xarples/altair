@@ -10,4 +10,6 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["sh", "./wait-for-it.sh", "db:27017", "--", "bash", "./entry.dev.sh" ]
+RUN chmod +x /usr/local/src/wait-for-it.sh
+
+CMD ["./wait-for-it.sh", "db:27017", "--", "npm", "run", "start-dev"]

@@ -1,35 +1,19 @@
 version: "3"
 
 services: 
-  altair:
-    build:
-      context: .
-      dockerfile: development.Dockerfile
-    ports:
-      - 3000:3000
-    depends_on:
-      - db
-    env_file: 
-      - .env
-    environment:
-     - DB_HOST=db
-    volumes:
-      - .:/usr/local/src
-      - /usr/local/src/node_modules
-
   altair-debug:
     build:
       context: .
-      dockerfile: debug.Dockerfile
+      dockerfile: development.Dockerfile
+    command: ./wait-for-it.sh db:27017 -- npm run start-debug-brk
     ports:
-      - 4000:4000
+      - 3000:3000
       - 9229:9229
     depends_on:
       - db
     env_file: 
       - .env
     environment:
-      - PORT=4000
       - DB_HOST=db
     volumes:
       - .:/usr/local/src

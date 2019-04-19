@@ -1,6 +1,6 @@
 import http from 'http'
 import express from 'express'
-import mongoose, { model } from 'mongoose'
+import mongoose from 'mongoose'
 import session from 'express-session'
 import passport from 'passport'
 import cookieParser from 'cookie-parser'
@@ -11,12 +11,12 @@ import * as middlewares from './middlewares'
 import config from './config'
 
 export const app = express()
-const server = http.createServer(app)
+const server = http.createServer(app);
 
 app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(session({ resave: false, saveUninitialized: false, secret: 'secret' }))
+app.use(session(config.session))
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -26,13 +26,20 @@ passport.use(auth.clientPasswordStrategy)
 passport.serializeUser(auth.serializeUser)
 passport.deserializeUser(auth.deserializeUser)
 
+app.use((req, res, next) => {
+  console.log('--user', req.user)
+  console.log('--session', req.session)
+  console.log('--cookies', req.cookies)
+  next()
+})
+
 app.get('/clients/save', async (req, res) => {
   const user = new models.User(
     { username: 'bob', password: 'secret', name: 'Bob Smith' },
   )
 
   const client = new models.Client(
-    { name: 'Example app', clientId: 'abc123', clientSecret: 'password', isTrusted: true, redirectUri: 'http://localhost:4000/callback' },
+    { name: 'Example app', clientId: 'abc123', clientSecret: 'password', isTrusted: true, redirectUri: 'http://localhost:4000/callback', scope: '*' },
   )
 
   await user.save()
@@ -41,13 +48,16 @@ app.get('/clients/save', async (req, res) => {
   res.send('Saved')
 })
 
-app.get('/clients', async (req, res) => {
-  const result = await Promise.all([models.User.find(), models.Client.find()])
-
+app.get('/status', async (req, res) => {
+  const result = {
+    users: await models.User.find(),
+    clients: await models.Client.find(),
+    accessTokens: await models.AccessToken.find(),
+    refreshTokens: await models.RefreshToken.find(),
+    authCodes: await models.AuthorizationCode.find(),
+  }
   res.send(result)
 })
-
-app.post('/login', passport.authenticate('local', { successReturnToOrRedirect: '/authorize', failureRedirect: '/login' }))
 
 app.get('/login', (req, res) => {
   res.send(`
@@ -108,7 +118,18 @@ app.get('/authorize', middlewares.isAuthenticated, oauth.authorizeMiddleware, (r
   `)
 })
 
-app.post('/authorize/decision', middlewares.isAuthenticated, oauth.decisionMiddleware)
+app.post('/login',
+  passport.authenticate('local', { 
+    successReturnToOrRedirect: '/authorize',
+    failureRedirect: '/login'
+  })
+)
+
+app.post('/authorize/decision', 
+  middlewares.isAuthenticated, 
+  oauth.decisionMiddleware
+)
+
 app.post('/token',
   passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
   oauth.tokenMiddleware,

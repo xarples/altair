@@ -5,7 +5,8 @@ interface IClient extends mongoose.Document {
   clientSecret: string,
   name: string,
   isTrusted: boolean,
-  redirectUri: string
+  redirectUri: string,
+  scope: string
 }
 
 const Client = new mongoose.Schema({
@@ -13,7 +14,8 @@ const Client = new mongoose.Schema({
   clientSecret: String,
   name: String,
   isTrusted: Boolean,
-  redirectUri: String
+  redirectUri: String,
+  scope: String
 })
 
 export default mongoose.model<IClient>('Client', Client)
