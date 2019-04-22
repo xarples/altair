@@ -21,14 +21,13 @@ oauthServer.grant(oauth2orize.grant.code(async (client, redirectUri, user, res, 
       clientId: client.clientId,
       redirectUri,
       userId: user.id,
-      scope: client.scope
+      scope: res.scope
     })
 
     await authCode.save()
 
     return done(null, code);
   } catch (e) {
-
     return done(e)
   }
 }))
@@ -76,7 +75,7 @@ oauthServer.exchange(oauth2orize.exchange.code(async (client, code, redirectUri,
 }))
 
 
-export const authorizeMiddleware = oauthServer.authorize(async (clientId, redirectUri, done) => {
+export const authorizeMiddleware = oauthServer.authorization(async (clientId, redirectUri, done) => {
   try {
     const client = await models.Client.findOne({ clientId }).exec()
 
@@ -95,7 +94,14 @@ export const authorizeMiddleware = oauthServer.authorize(async (clientId, redire
 })
 
 
-export const decisionMiddleware = oauthServer.decision()
+export const decisionMiddleware = oauthServer.decision((req, done) => {
+  if (req.oauth2)  {
+    return done(null, { 
+      scope: req.oauth2.req.scope,
+      state: req.oauth2.req.state
+    })
+  }
+})
 export const tokenMiddleware = oauthServer.token()
 export const errorHandlerMiddleware = oauthServer.errorHandler()
 

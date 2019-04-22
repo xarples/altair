@@ -17,24 +17,6 @@ services:
       - .:/usr/local/src
       - /usr/local/src/node_modules
 
-  altair-debug:
-    build:
-      context: .
-      dockerfile: debug.Dockerfile
-    ports:
-      - 4000:4000
-      - 9229:9229
-    depends_on:
-      - db
-    env_file: 
-      - .env
-    environment:
-      - PORT=4000
-      - DB_HOST=db
-    volumes:
-      - .:/usr/local/src
-      - /usr/local/src/node_modules
-
   db:
     image: mongo
     ports:

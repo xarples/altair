@@ -91,6 +91,7 @@ app.get('/login', (req, res) => {
 })
 
 app.get('/authorize', middlewares.isAuthenticated, oauth.authorizeMiddleware, (req, res) => {
+  console.log('test')
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -125,7 +126,11 @@ app.post('/login',
   })
 )
 
-app.post('/authorize/decision', 
+app.post('/authorize/decision',
+  (req, res, next) => {
+    console.log('test')
+    next()
+  },
   middlewares.isAuthenticated, 
   oauth.decisionMiddleware
 )
